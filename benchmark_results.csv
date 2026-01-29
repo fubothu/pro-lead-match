@@ -1,0 +1,21 @@
+Business Name,Expected URL,Found URL,Status,Sources,Notes
+Julia Vikander Decoration,http://www.vikanderdecoration.com,Not Found,MISMATCH,,Not found by Maps/Yelp
+C A L A F I A Home Design,http://www.calafiahomedesign.com,http://www.calafiahomedesign.com/,MATCH,"Yelp (Phone), Google Maps (Phone)",
+Kathryn Ivey Interiors,https://www.kathrynivey.com/,http://ivylaneliving.com/,MISMATCH,Google Maps (Name),URL Mismatch
+Kristine Krupa Interiors,http://www.kristinekrupainteriors.com,Not Found,MISMATCH,,Not found by Maps/Yelp
+Styled Up Interior Design,https://ellewatkinsrude.com/,Not Found,MISMATCH,Yelp (Phone),Not found by Maps/Yelp
+Renu Mathias Interiors,http://www.renumathias.com,Not Found,MISMATCH,,Not found by Maps/Yelp
+Missi Smith Design Co.,http://www.missismithdesign.com,Not Found,MISMATCH,,Not found by Maps/Yelp
+DBH design studio,http://www.daniabawadkji.com,https://www.daniabawadkji.com/,MATCH,"Yelp (Name), Google Maps (Phone)",
+MC Design Interiors,http://www.mcdesigninteriors.com,http://www.mcdesigninteriors.com/,MATCH,"Yelp (Phone), Google Maps (Phone)",
+Britney Good Interiors,http://www.britneygoodinteriors.com,https://www.britneygoodinteriors.com/,MATCH,"Google Maps (Name), Yelp (Name)",
+Torc Construction,http://www.torcconstruction.com,Not Found,MISMATCH,Yelp (Phone),Not found by Maps/Yelp
+"Buffalo Renovators, Inc",http://www.buffalorenovators.com,http://www.buffalorenovators.com/,MATCH,"Yelp (Phone), Google Maps (Phone)",
+RIC design build,http://www.ricdesignbuild.com,http://www.ricdesignbuild.com/,MATCH,"Yelp (Name), Google Maps (Phone)",
+SunCoast Remodeling,http://www.suncoastremodeling.com,http://suncoastremodeling.com/,MATCH,"Yelp (Phone), Google Maps (Phone)",
+Peak Property Services,http://www.peakpropertysvs.com,http://www.peakproperty.services/,MISMATCH,"Yelp (Name), Google Maps (Phone)",URL Mismatch
+DBS Sun Development,https://www.sun-development.com/,http://www.sun-development.com/,MATCH,"Google Maps (Name), Yelp (Name)",
+Richmond Hill Design + Build,http://www.richmondhillbuilds.com,Not Found,MISMATCH,Yelp (Name),Not found by Maps/Yelp
+Misskelley Builders,http://www.mbuilders.com,https://www.mbuilders.com/,MATCH,Google Maps (Name),
+ADU Builders,https://www.adubuildersca.com/,https://www.adubuildersca.com/about-us/,MATCH,"Yelp (Name), Google Maps (Phone)",
+Green Star Remodeling,https://greenstarremodeling.com,https://greenstarremodeling.com/,MATCH,"Yelp (Phone), Google Maps (Phone)",
