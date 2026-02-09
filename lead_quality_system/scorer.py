@@ -19,9 +19,17 @@ class LeadScorer:
         sources = []
         verified_name = None
         website = None
+        api_errors = []
+        google_similarity = None
+        google_similarity_matched_name = None
+        yelp_similarity = None
+        yelp_similarity_matched_name = None
+
+        def on_api_error(source: str, status_code: int) -> None:
+            api_errors.append(f"{source}_{status_code}")
 
         # 1. Google Places Search
-        google_place = GooglePlacesVerifier.search_by_phone(lead.phone)
+        google_place = GooglePlacesVerifier.search_by_phone(lead.phone, error_callback=on_api_error)
         if google_place:
             score += 40
             match_reasons.append("Phone number matched Google Business Profile")
@@ -30,12 +38,13 @@ class LeadScorer:
         else:
             # Fallback to Name + Zip
             query = f"{lead.business_name} {lead.zip_code}"
-            google_place = GooglePlacesVerifier.search_by_text(query)
+            google_place = GooglePlacesVerifier.search_by_text(query, error_callback=on_api_error)
             if google_place:
-                # GUARDRAIL: Verify Name Similarity (min 50% match)
+                # GUARDRAIL: Verify Name Similarity (min 50% match). Similarity = SequenceMatcher(lead name, place displayName).ratio()
                 returned_name = google_place.get('displayName', {}).get('text', "")
                 similarity = cls._calculate_similarity(lead.business_name, returned_name)
-                
+                google_similarity = similarity
+                google_similarity_matched_name = returned_name or None
                 if similarity >= 0.5:
                     score += 30
                     match_reasons.append(f"Business Name & Location matched Google Profile (Sim: {similarity:.2f})")
@@ -46,26 +55,31 @@ class LeadScorer:
                 else:
                     match_reasons.append(f"Rejected Google Match '{returned_name}' (Low Similarity: {similarity:.2f})")
 
-        # 2. Yelp Search
-        yelp_biz = YelpMatcher.search_by_phone(lead.phone)
-        if yelp_biz:
-            score += 20
-            match_reasons.append("Phone number matched verified Yelp Business")
-            sources.append("Yelp (Phone)")
-        else:
-            yelp_biz = YelpMatcher.search_by_term(lead.business_name, lead.zip_code)
-            if yelp_biz:
-                # GUARDRAIL: Verify Name Similarity
-                returned_name = yelp_biz.get('name', "")
-                similarity = cls._calculate_similarity(lead.business_name, returned_name)
-                
-                if similarity >= 0.5:
-                    score += 10 # Confidence lower for fuzzy name match
-                    match_reasons.append(f"Location matched Yelp Business (Sim: {similarity:.2f})")
-                    sources.append("Yelp (Name)")
-                    verified_name = verified_name or returned_name
-                else:
-                    match_reasons.append(f"Rejected Yelp Match '{returned_name}' (Low Similarity: {similarity:.2f})")
+        # 2. Yelp Search (commented out - out of free quota)
+        yelp_biz = None
+        # yelp_biz = YelpMatcher.search_by_phone(lead.phone, error_callback=on_api_error)
+        # if yelp_biz:
+        #     score += 20
+        #     match_reasons.append("Phone number matched verified Yelp Business")
+        #     sources.append("Yelp (Phone)")
+        # else:
+        #     # Yelp term search requires a valid location; skip if zip is empty or "nan"
+        #     location = (lead.zip_code or "").strip()
+        #     if location and location.lower() != "nan":
+        #         yelp_biz = YelpMatcher.search_by_term(lead.business_name, location, error_callback=on_api_error)
+        #     if yelp_biz:
+        #         # GUARDRAIL: Verify Name Similarity. Similarity = SequenceMatcher(lead name, Yelp business name).ratio()
+        #         returned_name = yelp_biz.get('name', "")
+        #         similarity = cls._calculate_similarity(lead.business_name, returned_name)
+        #         yelp_similarity = similarity
+        #         yelp_similarity_matched_name = returned_name or None
+        #         if similarity >= 0.5:
+        #             score += 10  # Confidence lower for fuzzy name match
+        #             match_reasons.append(f"Location matched Yelp Business (Sim: {similarity:.2f})")
+        #             sources.append("Yelp (Name)")
+        #             verified_name = verified_name or returned_name
+        #         else:
+        #             match_reasons.append(f"Rejected Yelp Match '{returned_name}' (Low Similarity: {similarity:.2f})")
 
         # 3. Website Discovery (If not found yet)
         if not website:
@@ -113,11 +127,35 @@ class LeadScorer:
         else:
             tier = "Low"
 
+        # Three-state: "True" = API success + match accepted; "False" = API success, no/rejected match; "Failed" = API error
+        sources_set = list(set(sources))
+        if any(e.startswith("google_") for e in api_errors):
+            google_validated = "Failed"
+        elif "Google Maps (Phone)" in sources_set or "Google Maps (Name)" in sources_set:
+            google_validated = "True"
+        else:
+            google_validated = "False"
+        if any(e.startswith("yelp_") for e in api_errors):
+            yelp_validated = "Failed"
+        elif "Yelp (Phone)" in sources_set or "Yelp (Name)" in sources_set:
+            yelp_validated = "True"
+        else:
+            yelp_validated = "False"
+
         return EnrichmentResult(
             score=score,
             quality_tier=tier,
             verified_business_name=verified_name,
             website=website,
             match_reasons=match_reasons,
-            sources=list(set(sources)) # Unique list
+            sources=sources_set,
+            raw_google=google_place,
+            raw_yelp=yelp_biz,
+            api_errors=api_errors,
+            google_validated=google_validated,
+            yelp_validated=yelp_validated,
+            google_similarity=google_similarity,
+            yelp_similarity=yelp_similarity,
+            google_similarity_matched_name=google_similarity_matched_name,
+            yelp_similarity_matched_name=yelp_similarity_matched_name,
         )

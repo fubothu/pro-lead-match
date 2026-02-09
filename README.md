@@ -46,10 +46,19 @@ The system needs API keys to work (Google Maps & Yelp).
     *   *Note*: The system works best with at least `GOOGLE_PLACES_API_KEY` and `YELP_API_KEY`.
 
 ### 5. Run the App
-Launch the Verified Lead Dashboard:
+From the project root (`pro-lead-match`), set `PYTHONPATH` so the app can find the `lead_quality_system` package, then launch the dashboard:
+
 ```bash
-streamlit run lead_quality_system/app.py
+# From project root - required so "lead_quality_system" is importable
+cd pro-lead-match
+PYTHONPATH=. streamlit run lead_quality_system/app.py
 ```
+
+Or use the run script:
+```bash
+./run_app.sh
+```
+
 *   The app should automatically open in your browser at `http://localhost:8501`.
 
 ### 6. Tools included
