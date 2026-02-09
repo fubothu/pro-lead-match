@@ -98,3 +98,23 @@ To ensure you stay within the Free Tier:
     MOCK_MODE=false
     ```
 4.  Restart your server. You are now validating real leads!
+
+---
+
+## Batch Output Columns: Raw JSON & Similarity Scores
+
+### Raw Google / Yelp response JSON
+- **raw_google**: Full JSON of the Google Places API response (single place) when we got a match. Empty when no Google response.
+- **raw_yelp**: Full JSON of the Yelp API response (single business) when we got a match. Empty when no Yelp response.
+
+These are **not** from the API response body directly—we store the place/business object we use for validation so you can inspect the exact payload.
+
+### Similarity scores (where they come from and how we calculate them)
+Similarity scores are **computed by us**; they are **not** returned by Google or Yelp.
+
+- **How we calculate**: Python’s `difflib.SequenceMatcher(None, a.lower(), b.lower()).ratio()`. We compare the **lead’s business_name** to the **name returned by the API** (case-insensitive). The result is a ratio from **0.0** (no match) to **1.0** (identical).
+- **google_similarity**: Set only when we do a **Google name+zip** search (not phone). We compare `lead.business_name` to the place’s **displayName** from the Google Places response. Empty when we matched by phone only or had no Google place.
+- **yelp_similarity**: Set only when we do a **Yelp term** search (not phone). We compare `lead.business_name` to the **name** field of the Yelp business. Empty when we matched by phone only or had no Yelp business.
+- **google_similarity_matched_name** / **yelp_similarity_matched_name**: The API-returned name we compared against (Google `displayName` or Yelp `name`), so you can see exactly what was compared.
+
+We use a **0.5** threshold: if similarity ≥ 0.5 we accept the match; otherwise we reject it and record a “Rejected … (Low Similarity: X.XX)” reason.
